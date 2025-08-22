@@ -1,0 +1,290 @@
+# System Integration Configuration
+# Defines how all MCP servers integrate with the central Data Scientist Agent
+
+system:
+  name: "Autonomous Demand Forecasting System"
+  version: "1.0.0"
+  environment: "${ENVIRONMENT:-development}"
+  
+# Central orchestrator configuration
+data_scientist_agent:
+  host: "${DATA_SCIENTIST_AGENT_HOST:-localhost}"
+  port: "${DATA_SCIENTIST_AGENT_PORT:-8000}"
+  base_url: "${DATA_SCIENTIST_AGENT_URL:-http://localhost:8000}"
+  
+  # Workflow configuration
+  workflows:
+    retraining:
+      enabled: true
+      trigger_threshold: "${DEFAULT_ACCURACY_THRESHOLD:-0.85}"
+      cooldown_period: "${RETRAINING_COOLDOWN:-3600}"  # seconds
+      max_concurrent_retraining: 3
+      
+    monitoring:
+      enabled: true
+      check_interval: "${DRIFT_DETECTION_INTERVAL:-300}"  # seconds
+      alert_threshold: 0.80
+      
+    deployment:
+      strategy: "blue_green"
+      rollback_threshold: 0.75
+      stabilization_period: 1800  # 30 minutes
+
+# MCP Server configurations
+mcp_servers:
+  drift_detection:
+    host: "${DRIFT_DETECTION_HOST:-localhost}"
+    port: "${DRIFT_DETECTION_PORT:-8001}"
+    base_url: "${DRIFT_DETECTION_URL:-http://localhost:8001}"
+    enabled: true
+    
+    tools:
+      - monitor_model_accuracy
+      - detect_performance_drift
+      - analyze_drift_patterns
+      - classify_drift_severity
+      
+    configuration:
+      monitoring_interval: 300  # 5 minutes
+      accuracy_threshold: 0.85
+      severity_thresholds:
+        low: 0.80
+        medium: 0.70
+        high: 0.60
+        
+  sales_data:
+    host: "${SALES_DATA_HOST:-localhost}"
+    port: "${SALES_DATA_PORT:-8002}"
+    base_url: "${SALES_DATA_URL:-http://localhost:8002}"
+    enabled: true
+    
+    tools:
+      - collect_sales_data
+      - analyze_customer_patterns
+      - extract_seasonal_trends
+      - validate_data_quality
+      
+    configuration:
+      collection_window: 90  # days
+      quality_threshold: 0.95
+      batch_size: "${BATCH_SIZE:-1000}"
+      
+  inventory:
+    host: "${INVENTORY_HOST:-localhost}"
+    port: "${INVENTORY_PORT:-8003}"
+    base_url: "${INVENTORY_URL:-http://localhost:8003}"
+    enabled: true
+    
+    tools:
+      - get_current_inventory
+      - analyze_stockout_patterns
+      - calculate_inventory_turnover
+      - assess_supply_chain_health
+      
+    configuration:
+      update_interval: 300  # 5 minutes
+      stockout_threshold: 0
+      turnover_window: 30  # days
+      
+  forecasting_model:
+    host: "${FORECASTING_MODEL_HOST:-localhost}"
+    port: "${FORECASTING_MODEL_PORT:-8004}"
+    base_url: "${FORECASTING_MODEL_URL:-http://localhost:8004}"
+    enabled: true
+    
+    tools:
+      - train_forecasting_models
+      - optimize_hyperparameters
+      - create_ensemble_model
+      - generate_model_artifacts
+      
+    configuration:
+      model_types:
+        - arima
+        - prophet
+        - xgboost
+        - neural_network
+      optimization_method: "bayesian"
+      max_training_time: 3600  # 1 hour
+      
+  model_validation:
+    host: "${MODEL_VALIDATION_HOST:-localhost}"
+    port: "${MODEL_VALIDATION_PORT:-8005}"
+    base_url: "${MODEL_VALIDATION_URL:-http://localhost:8005}"
+    enabled: true
+    
+    tools:
+      - validate_model_performance
+      - compare_against_baseline
+      - test_statistical_significance
+      - generate_validation_report
+      
+    configuration:
+      validation_split: 0.2
+      significance_level: 0.05
+      improvement_threshold: 0.03  # 3% minimum improvement
+      
+  model_deployment:
+    host: "${MODEL_DEPLOYMENT_HOST:-localhost}"
+    port: "${MODEL_DEPLOYMENT_PORT:-8006}"
+    base_url: "${MODEL_DEPLOYMENT_URL:-http://localhost:8006}"
+    enabled: true
+    
+    tools:
+      - create_deployment_package
+      - execute_blue_green_deployment
+      - monitor_production_performance
+      - rollback_deployment
+      
+    configuration:
+      deployment_strategy: "blue_green"
+      health_check_interval: 30  # seconds
+      rollback_threshold: 0.75
+      stabilization_period: 1800  # 30 minutes
+
+# Database configuration
+database:
+  type: "postgresql"
+  host: "${POSTGRES_HOST:-localhost}"
+  port: "${POSTGRES_PORT:-5432}"
+  name: "${POSTGRES_DB:-autonomous_forecasting}"
+  user: "${POSTGRES_USER:-postgres}"
+  password: "${POSTGRES_PASSWORD}"
+  
+  connection_pool:
+    min_connections: 5
+    max_connections: 20
+    connection_timeout: 30
+    
+  backup:
+    enabled: true
+    schedule: "0 2 * * *"  # Daily at 2 AM
+    retention_days: 30
+
+# Cache configuration
+cache:
+  type: "redis"
+  host: "${REDIS_HOST:-localhost}"
+  port: "${REDIS_PORT:-6379}"
+  password: "${REDIS_PASSWORD:-}"
+  
+  settings:
+    default_ttl: "${CACHE_TTL:-3600}"  # 1 hour
+    max_memory: "256mb"
+    eviction_policy: "allkeys-lru"
+
+# External system integrations
+external_systems:
+  pos_system:
+    enabled: "${POS_SYSTEM_URL:+true}"
+    base_url: "${POS_SYSTEM_URL}"
+    api_key: "${POS_SYSTEM_API_KEY}"
+    timeout: 30
+    retry_attempts: 3
+    
+  wms_system:
+    enabled: "${WMS_SYSTEM_URL:+true}"
+    base_url: "${WMS_SYSTEM_URL}"
+    api_key: "${WMS_SYSTEM_API_KEY}"
+    timeout: 30
+    retry_attempts: 3
+    
+  erp_system:
+    enabled: "${ERP_SYSTEM_URL:+true}"
+    base_url: "${ERP_SYSTEM_URL}"
+    api_key: "${ERP_SYSTEM_API_KEY}"
+    timeout: 30
+    retry_attempts: 3
+
+# Monitoring and alerting
+monitoring:
+  dashboard:
+    host: "${DASHBOARD_HOST:-localhost}"
+    port: "${DASHBOARD_PORT:-8080}"
+    base_url: "${DASHBOARD_URL:-http://localhost:8080}"
+    
+  metrics:
+    enabled: "${METRICS_ENABLED:-true}"
+    port: "${METRICS_PORT:-9090}"
+    collection_interval: 60  # seconds
+    
+  health_checks:
+    enabled: true
+    interval: "${HEALTH_CHECK_INTERVAL:-30}"  # seconds
+    timeout: 10  # seconds
+    
+  alerting:
+    email:
+      enabled: "${SMTP_HOST:+true}"
+      smtp_host: "${SMTP_HOST}"
+      smtp_port: "${SMTP_PORT:-587}"
+      smtp_user: "${SMTP_USER}"
+      smtp_password: "${SMTP_PASSWORD}"
+      from_address: "${NOTIFICATION_EMAIL_FROM}"
+      recipients: "${ALERT_EMAIL_RECIPIENTS}"
+      
+    slack:
+      enabled: "${SLACK_WEBHOOK_URL:+true}"
+      webhook_url: "${SLACK_WEBHOOK_URL}"
+      channel: "${SLACK_CHANNEL:-#alerts}"
+
+# Security configuration
+security:
+  encryption:
+    key: "${ENCRYPTION_KEY}"
+    algorithm: "AES-256-GCM"
+    
+  authentication:
+    jwt_secret: "${JWT_SECRET}"
+    token_expiry: 3600  # 1 hour
+    
+  tls:
+    enabled: "${TLS_ENABLED:-false}"
+    cert_file: "${TLS_CERT_FILE}"
+    key_file: "${TLS_KEY_FILE}"
+    
+  api_security:
+    rate_limiting:
+      enabled: true
+      requests_per_minute: 100
+      burst_size: 20
+      
+    cors:
+      enabled: true
+      allowed_origins:
+        - "http://localhost:3000"
+        - "http://localhost:8080"
+
+# Performance configuration
+performance:
+  workers:
+    max_workers: "${MAX_WORKERS:-4}"
+    worker_timeout: 300  # 5 minutes
+    
+  batch_processing:
+    batch_size: "${BATCH_SIZE:-1000}"
+    max_batch_time: 300  # 5 minutes
+    
+  caching:
+    model_cache_size: "1GB"
+    data_cache_size: "512MB"
+    
+  resource_limits:
+    memory_limit: "2GB"
+    cpu_limit: "2.0"
+
+# Business configuration
+business:
+  timezone: "${TIMEZONE:-UTC}"
+  currency: "${CURRENCY:-USD}"
+  business_hours:
+    start: "${BUSINESS_HOURS_START:-09:00}"
+    end: "${BUSINESS_HOURS_END:-17:00}"
+    
+  forecasting:
+    horizon_days: 30
+    update_frequency: "daily"
+    accuracy_targets:
+      high_priority: 0.90
+      medium_priority: 0.85
+      low_priority: 0.80

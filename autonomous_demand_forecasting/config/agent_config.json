@@ -1,0 +1,41 @@
+{
+  "drift_thresholds": {
+    "low": 0.85,
+    "medium": 0.80,
+    "high": 0.70
+  },
+  "retraining_triggers": {
+    "accuracy_drop_threshold": 0.03,
+    "consecutive_failures": 3,
+    "time_since_last_training": 168
+  },
+  "validation_criteria": {
+    "min_improvement": 0.03,
+    "statistical_significance": 0.05,
+    "holdout_test_size": 0.2
+  },
+  "deployment_strategy": "blue_green",
+  "monitoring_intervals": {
+    "drift_check": 300,
+    "health_check": 60,
+    "performance_review": 3600
+  },
+  "mcp_server_timeouts": {
+    "drift_detection": 30,
+    "sales_data": 60,
+    "inventory": 30,
+    "forecasting_model": 300,
+    "model_validation": 120,
+    "model_deployment": 180
+  },
+  "workflow_limits": {
+    "max_concurrent": 3,
+    "timeout_hours": 24,
+    "cooldown_hours": 6
+  },
+  "data_quality": {
+    "min_completeness": 0.95,
+    "max_staleness_hours": 24,
+    "required_sample_size": 1000
+  }
+}

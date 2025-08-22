@@ -1,0 +1,16 @@
+[project]
+name = "ai-agent-mcp"
+version = "0.1.0"
+description = "Telecom Network Optimization MCP Server"
+requires-python = ">=3.12"
+dependencies = [
+    "google-adk==1.0.0",
+    "mcp==1.9.4",
+    "deprecated",
+    "pandas",
+    "numpy",
+    "scikit-learn",
+    "matplotlib",
+    "seaborn",
+    "python-dotenv",
+]

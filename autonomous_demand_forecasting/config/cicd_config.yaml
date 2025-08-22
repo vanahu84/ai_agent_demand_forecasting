@@ -1,0 +1,382 @@
+# CI/CD Configuration for Autonomous Demand Forecasting MLOps Pipeline
+# This configuration defines the continuous integration and deployment pipeline
+# for automated model training, validation, and deployment
+
+pipeline:
+  name: "autonomous-demand-forecasting-mlops"
+  version: "1.0.0"
+  description: "MLOps pipeline for autonomous demand forecasting model lifecycle"
+
+# Pipeline triggers
+triggers:
+  # Automatic triggers
+  drift_detection:
+    enabled: true
+    threshold: 0.85  # Accuracy threshold for triggering retraining
+    cooldown_hours: 6  # Minimum time between automatic triggers
+  
+  scheduled:
+    enabled: true
+    cron: "0 2 * * 0"  # Weekly on Sunday at 2 AM
+    timezone: "UTC"
+  
+  # Manual triggers
+  manual:
+    enabled: true
+    require_approval: false
+  
+  # Data quality triggers
+  data_quality:
+    enabled: true
+    min_completeness: 0.95
+    max_staleness_hours: 24
+  
+  # Git webhook triggers
+  git_webhook:
+    enabled: true
+    branches:
+      - "main"
+      - "develop"
+    file_patterns:
+      - "*.py"
+      - "*.yaml"
+      - "*.yml"
+      - "requirements.txt"
+
+# Pipeline stages configuration
+stages:
+  data_validation:
+    enabled: true
+    timeout_minutes: 30
+    retry_count: 2
+    requirements:
+      - min_sample_size: 1000
+      - completeness_threshold: 0.95
+      - quality_score_threshold: 0.90
+    
+  model_training:
+    enabled: true
+    timeout_minutes: 180
+    retry_count: 1
+    parallel_experiments: 3
+    algorithms:
+      - name: "xgboost"
+        enabled: true
+        hyperparameter_optimization: true
+        max_trials: 50
+      - name: "prophet"
+        enabled: true
+        hyperparameter_optimization: true
+        max_trials: 30
+      - name: "arima"
+        enabled: true
+        hyperparameter_optimization: false
+      - name: "ensemble"
+        enabled: true
+        base_models: ["xgboost", "prophet", "arima"]
+    
+  model_validation:
+    enabled: true
+    timeout_minutes: 60
+    retry_count: 2
+    validation_criteria:
+      min_improvement: 0.03
+      statistical_significance: 0.05
+      holdout_test_size: 0.2
+      cross_validation_folds: 5
+    
+  model_testing:
+    enabled: true
+    timeout_minutes: 45
+    retry_count: 1
+    test_suites:
+      - name: "unit_tests"
+        enabled: true
+        coverage_threshold: 0.80
+      - name: "integration_tests"
+        enabled: true
+        timeout_minutes: 30
+      - name: "performance_tests"
+        enabled: true
+        latency_threshold_ms: 100
+        throughput_threshold: 1000
+      - name: "security_tests"
+        enabled: true
+        vulnerability_scan: true
+    
+  staging_deployment:
+    enabled: true
+    timeout_minutes: 30
+    retry_count: 2
+    environment: "staging"
+    health_check:
+      enabled: true
+      timeout_minutes: 10
+      endpoints:
+        - "/health"
+        - "/metrics"
+        - "/predict"
+    
+  production_deployment:
+    enabled: true
+    timeout_minutes: 60
+    retry_count: 1
+    strategy: "blue_green"
+    approval_required: false  # Set to true for manual approval
+    rollback:
+      enabled: true
+      auto_rollback_on_failure: true
+      health_check_duration_minutes: 60
+    
+  monitoring_setup:
+    enabled: true
+    timeout_minutes: 15
+    retry_count: 2
+    monitoring_interval_seconds: 300
+    alert_channels:
+      - "email"
+      - "slack"
+      - "dashboard"
+
+# Environment configurations
+environments:
+  development:
+    database_url: "sqlite:///dev_autonomous_demand_forecasting.db"
+    model_registry_path: "./dev_models"
+    experiment_tracking_path: "./dev_experiments"
+    log_level: "DEBUG"
+    
+  staging:
+    database_url: "sqlite:///staging_autonomous_demand_forecasting.db"
+    model_registry_path: "./staging_models"
+    experiment_tracking_path: "./staging_experiments"
+    log_level: "INFO"
+    
+  production:
+    database_url: "sqlite:///autonomous_demand_forecasting.db"
+    model_registry_path: "./production_models"
+    experiment_tracking_path: "./production_experiments"
+    log_level: "WARNING"
+
+# Model versioning configuration
+versioning:
+  strategy: "semantic"  # semantic, timestamp, or hash
+  auto_increment: true
+  tag_format: "v{major}.{minor}.{patch}"
+  retention_policy:
+    max_versions_per_model: 10
+    max_age_days: 90
+    keep_production_models: true
+
+# Experiment tracking configuration
+experiment_tracking:
+  enabled: true
+  auto_logging: true
+  metrics_to_track:
+    - "accuracy"
+    - "mape"
+    - "rmse"
+    - "training_time"
+    - "inference_latency"
+  artifacts_to_track:
+    - "model_file"
+    - "feature_importance"
+    - "confusion_matrix"
+    - "training_logs"
+  
+# Monitoring and alerting configuration
+monitoring:
+  enabled: true
+  metrics:
+    - name: "accuracy"
+      threshold: 0.80
+      comparison: "greater_than"
+      severity: "high"
+    - name: "prediction_latency"
+      threshold: 200  # milliseconds
+      comparison: "less_than"
+      severity: "medium"
+    - name: "error_rate"
+      threshold: 0.05
+      comparison: "less_than"
+      severity: "high"
+    - name: "throughput"
+      threshold: 100  # requests per second
+      comparison: "greater_than"
+      severity: "low"
+  
+  alerting:
+    enabled: true
+    channels:
+      email:
+        enabled: true
+        recipients:
+          - "data-science-team@company.com"
+          - "devops-team@company.com"
+        severity_threshold: "medium"
+      
+      slack:
+        enabled: true
+        webhook_url: "${SLACK_WEBHOOK_URL}"
+        channel: "#ml-alerts"
+        severity_threshold: "high"
+      
+      dashboard:
+        enabled: true
+        auto_refresh_seconds: 30
+        severity_threshold: "low"
+
+# Security configuration
+security:
+  encryption:
+    enabled: true
+    algorithm: "AES-256"
+    key_rotation_days: 90
+  
+  authentication:
+    enabled: true
+    method: "token"  # token, oauth, or ldap
+    token_expiry_hours: 24
+  
+  authorization:
+    enabled: true
+    roles:
+      - name: "data_scientist"
+        permissions:
+          - "trigger_pipeline"
+          - "view_experiments"
+          - "view_models"
+      - name: "ml_engineer"
+        permissions:
+          - "trigger_pipeline"
+          - "deploy_models"
+          - "view_experiments"
+          - "view_models"
+          - "manage_monitoring"
+      - name: "admin"
+        permissions:
+          - "*"  # All permissions
+
+# Resource management
+resources:
+  compute:
+    training:
+      cpu_cores: 4
+      memory_gb: 16
+      gpu_enabled: false
+      timeout_hours: 6
+    
+    inference:
+      cpu_cores: 2
+      memory_gb: 8
+      gpu_enabled: false
+      auto_scaling: true
+      min_instances: 1
+      max_instances: 5
+  
+  storage:
+    models:
+      type: "local"  # local, s3, gcs, or azure
+      path: "./models"
+      retention_days: 365
+    
+    experiments:
+      type: "local"
+      path: "./experiments"
+      retention_days: 180
+    
+    artifacts:
+      type: "local"
+      path: "./artifacts"
+      retention_days: 90
+
+# Integration configurations
+integrations:
+  git:
+    enabled: true
+    repository_url: "${GIT_REPOSITORY_URL}"
+    branch: "main"
+    commit_tracking: true
+  
+  docker:
+    enabled: true
+    registry: "${DOCKER_REGISTRY}"
+    base_image: "python:3.9-slim"
+    build_context: "."
+  
+  kubernetes:
+    enabled: false
+    namespace: "ml-pipeline"
+    resource_limits:
+      cpu: "2"
+      memory: "8Gi"
+  
+  external_apis:
+    model_registry:
+      enabled: false
+      url: "${MODEL_REGISTRY_URL}"
+      api_key: "${MODEL_REGISTRY_API_KEY}"
+    
+    experiment_tracking:
+      enabled: false
+      provider: "mlflow"  # mlflow, wandb, or neptune
+      url: "${EXPERIMENT_TRACKING_URL}"
+      api_key: "${EXPERIMENT_TRACKING_API_KEY}"
+
+# Logging configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  handlers:
+    - type: "console"
+      enabled: true
+    - type: "file"
+      enabled: true
+      filename: "mlops_pipeline.log"
+      max_size_mb: 100
+      backup_count: 5
+    - type: "remote"
+      enabled: false
+      endpoint: "${LOG_AGGREGATION_ENDPOINT}"
+
+# Notification configuration
+notifications:
+  pipeline_start:
+    enabled: true
+    channels: ["slack"]
+    message: "MLOps pipeline started for model: {model_type}"
+  
+  pipeline_success:
+    enabled: true
+    channels: ["email", "slack"]
+    message: "MLOps pipeline completed successfully. Model {model_id} deployed to production."
+  
+  pipeline_failure:
+    enabled: true
+    channels: ["email", "slack"]
+    message: "MLOps pipeline failed at stage: {failed_stage}. Error: {error_message}"
+  
+  model_drift_detected:
+    enabled: true
+    channels: ["email", "slack", "dashboard"]
+    message: "Model drift detected. Accuracy dropped to {current_accuracy}. Retraining triggered."
+
+# Quality gates
+quality_gates:
+  data_quality:
+    enabled: true
+    min_completeness: 0.95
+    max_missing_percentage: 0.05
+    schema_validation: true
+  
+  model_performance:
+    enabled: true
+    min_accuracy: 0.80
+    min_improvement: 0.02
+    statistical_significance: 0.05
+  
+  deployment_readiness:
+    enabled: true
+    all_tests_passed: true
+    security_scan_passed: true
+    performance_benchmarks_met: true

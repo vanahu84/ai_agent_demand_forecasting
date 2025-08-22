@@ -1,0 +1,138 @@
+/* Additional custom styles for the monitoring dashboard */
+
+.dashboard-container {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+.metric-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+}
+
+.model-card {
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+.model-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.alert-card {
+    transition: all 0.2s ease-in-out;
+}
+
+.alert-card:hover {
+    transform: translateX(5px);
+}
+
+.chart-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    color: #6c757d;
+}
+
+.status-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.accuracy-gauge {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 60px;
+}
+
+.accuracy-gauge svg {
+    transform: rotate(-90deg);
+}
+
+.accuracy-gauge .gauge-bg {
+    fill: none;
+    stroke: #e9ecef;
+    stroke-width: 4;
+}
+
+.accuracy-gauge .gauge-fill {
+    fill: none;
+    stroke-width: 4;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.5s ease-in-out;
+}
+
+.accuracy-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .metric-card {
+        margin-bottom: 15px;
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+    }
+    
+    .chart-container {
+        padding: 15px;
+    }
+    
+    .control-panel {
+        padding: 15px;
+    }
+}
+
+/* Animation for loading states */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Toast notifications */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .chart-container {
+        background-color: #343a40;
+        color: white;
+    }
+    
+    .model-card {
+        background-color: #495057;
+        border-color: #6c757d;
+        color: white;
+    }
+    
+    .control-panel {
+        background-color: #495057;
+        color: white;
+    }
+}

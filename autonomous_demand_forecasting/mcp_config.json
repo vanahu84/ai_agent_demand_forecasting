@@ -1,0 +1,68 @@
+{
+    "mcpServers": {
+        "drift_detection": {
+            "command": "python",
+            "args": [
+                "-m",
+                "autonomous_demand_forecasting.drift_detection_mcp_server"
+            ],
+            "disabled": false,
+            "autoApprove": []
+        },
+        "sales_data": {
+            "command": "python",
+            "args": [
+                "-m",
+                "autonomous_demand_forecasting.sales_data_mcp_server"
+            ],
+            "disabled": false,
+            "autoApprove": []
+        },
+        "inventory": {
+            "command": "python",
+            "args": [
+                "-m",
+                "autonomous_demand_forecasting.inventory_mcp_server"
+            ],
+            "disabled": true,
+            "autoApprove": []
+        },
+        "forecasting_model": {
+            "command": "python",
+            "args": [
+                "-m",
+                "autonomous_demand_forecasting.forecasting_model_mcp_server"
+            ],
+            "disabled": true,
+            "autoApprove": []
+        },
+        "model_validation": {
+            "command": "python",
+            "args": [
+                "-m",
+                "autonomous_demand_forecasting.model_validation_mcp_server"
+            ],
+            "disabled": true,
+            "autoApprove": []
+        },
+        "SQLiteDB": {
+            "command": "python",
+            "args": [
+                "telco_network_optimizer_agent/server.py"
+            ],
+            "timeout": 10.0,
+            "retries": 3,
+            "env": {},
+            "disabled": false
+        },
+        "model_deployment": {
+            "command": "python",
+            "args": [
+                "-m",
+                "autonomous_demand_forecasting.model_deployment_mcp_server"
+            ],
+            "disabled": true,
+            "autoApprove": []
+        }
+    }
+}

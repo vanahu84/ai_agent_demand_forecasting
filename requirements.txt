@@ -1,0 +1,10 @@
+google-adk==1.7.0
+mcp==1.9.4
+deprecated
+mcp[cli]
+pandas
+numpy
+scikit-learn
+matplotlib
+seaborn
+python-dotenv

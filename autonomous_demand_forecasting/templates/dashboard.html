@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous Demand Forecasting - Monitoring Dashboard</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Socket.IO -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+
+    <style>
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .alert-card {
+            border-left: 4px solid;
+            margin-bottom: 10px;
+        }
+
+        .alert-HIGH {
+            border-left-color: #dc3545;
+            background-color: #f8d7da;
+        }
+
+        .alert-MEDIUM {
+            border-left-color: #ffc107;
+            background-color: #fff3cd;
+        }
+
+        .alert-LOW {
+            border-left-color: #28a745;
+            background-color: #d4edda;
+        }
+
+        .model-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: white;
+        }
+
+        .drift-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .drift-NORMAL {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .drift-LOW {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .drift-MEDIUM {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .drift-HIGH {
+            background-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-ACTIVE {
+            background-color: #28a745;
+        }
+
+        .status-PENDING {
+            background-color: #ffc107;
+        }
+
+        .status-FAILED {
+            background-color: #dc3545;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .last-updated {
+            font-size: 0.8rem;
+            color: #6c757d;
+            text-align: right;
+        }
+
+        .control-panel {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-chart-line me-2"></i>
+                Autonomous Demand Forecasting Dashboard
+            </span>
+            <div class="d-flex">
+                <span class="badge bg-success me-2" id="connection-status">
+                    <i class="fas fa-circle"></i> Connected
+                </span>
+                <span class="text-light" id="last-update">Last updated: --</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- Key Metrics Row -->
+        <div class="row">
+            <div class="col-md-2">
+                <div class="metric-card">
+                    <div class="metric-value" id="active-models">--</div>
+                    <div class="metric-label">Active Models</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="metric-card">
+                    <div class="metric-value" id="avg-accuracy">--</div>
+                    <div class="metric-label">Avg Accuracy</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="metric-card">
+                    <div class="metric-value" id="drift-alerts">--</div>
+                    <div class="metric-label">Drift Alerts</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="metric-card">
+                    <div class="metric-value" id="retraining-jobs">--</div>
+                    <div class="metric-label">Retraining Jobs</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="metric-card">
+                    <div class="metric-value" id="deployment-status">--</div>
+                    <div class="metric-label">Deployment Status</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="metric-card">
+                    <div class="metric-value" id="business-impact">--</div>
+                    <div class="metric-label">Business Impact ($)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row">
+            <div class="col-md-8">
+                <div class="chart-container">
+                    <h5>Model Accuracy Trends</h5>
+                    <div id="accuracy-chart" style="height: 400px;"></div>
+                    <div class="last-updated" id="accuracy-chart-updated">Last updated: --</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="chart-container">
+                    <h5>Drift Events</h5>
+                    <div id="drift-chart" style="height: 400px;"></div>
+                    <div class="last-updated" id="drift-chart-updated">Last updated: --</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Models and Alerts Row -->
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Model Performance</h5>
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshModels()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="models-container">
+                            <div class="text-center text-muted">Loading models...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Active Alerts</h5>
+                        <span class="badge bg-danger" id="alert-count">0</span>
+                    </div>
+                    <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                        <div id="alerts-container">
+                            <div class="text-center text-muted">No active alerts</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="control-panel">
+                    <h5>Manual Controls</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="model-select" class="form-label">Select Model</label>
+                                <select class="form-select" id="model-select">
+                                    <option value="">Choose a model...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="retraining-reason" class="form-label">Retraining Reason</label>
+                                <input type="text" class="form-control" id="retraining-reason"
+                                    placeholder="Enter reason for manual retraining">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">&nbsp;</label>
+                                <div>
+                                    <button class="btn btn-warning me-2" onclick="triggerRetraining()">
+                                        <i class="fas fa-play"></i> Trigger Retraining
+                                    </button>
+                                    <button class="btn btn-danger" onclick="emergencyStop()">
+                                        <i class="fas fa-stop"></i> Emergency Stop
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Socket.IO connection
+        const socket = io();
+
+        // Global variables
+        let currentModels = [];
+        let currentAlerts = [];
+
+        // Socket event handlers
+        socket.on('connect', function () {
+            console.log('Connected to dashboard');
+            document.getElementById('connection-status').innerHTML = '<i class="fas fa-circle"></i> Connected';
+            document.getElementById('connection-status').className = 'badge bg-success me-2';
+        });
+
+        socket.on('disconnect', function () {
+            console.log('Disconnected from dashboard');
+            document.getElementById('connection-status').innerHTML = '<i class="fas fa-circle"></i> Disconnected';
+            document.getElementById('connection-status').className = 'badge bg-danger me-2';
+        });
+
+        socket.on('metrics_update', function (metrics) {
+            updateMetrics(metrics);
+        });
+
+        socket.on('models_update', function (models) {
+            currentModels = models;
+            updateModels(models);
+            updateModelSelect(models);
+        });
+
+        socket.on('alerts_update', function (alerts) {
+            currentAlerts = alerts;
+            updateAlerts(alerts);
+        });
+
+        socket.on('error', function (error) {
+            console.error('Dashboard error:', error);
+            showNotification('Error: ' + error.msg, 'danger');
+        });
+
+        // Update functions
+        function updateMetrics(metrics) {
+            document.getElementById('active-models').textContent = metrics.active_models;
+            document.getElementById('avg-accuracy').textContent = (metrics.avg_accuracy * 100).toFixed(1) + '%';
+            document.getElementById('drift-alerts').textContent = metrics.drift_alerts;
+            document.getElementById('retraining-jobs').textContent = metrics.retraining_jobs;
+            document.getElementById('deployment-status').textContent = metrics.deployment_status;
+            document.getElementById('business-impact').textContent = '$' + metrics.business_impact.toLocaleString();
+            document.getElementById('last-update').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+        }
+
+        function updateModels(models) {
+            const container = document.getElementById('models-container');
+
+            if (models.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted">No models found</div>';
+                return;
+            }
+
+            let html = '';
+            models.forEach(model => {
+                const accuracy = (model.current_accuracy * 100).toFixed(1);
+                const lastUpdated = new Date(model.last_updated).toLocaleString();
+
+                html += `
+                    <div class="model-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">${model.model_name}</h6>
+                                <small class="text-muted">ID: ${model.model_id}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="drift-status drift-${model.drift_status}">${model.drift_status}</span>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-6">
+                                <strong>Accuracy: ${accuracy}%</strong>
+                            </div>
+                            <div class="col-6 text-end">
+                                <small class="text-muted">Updated: ${lastUpdated}</small>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar ${getAccuracyColor(model.current_accuracy)}" 
+                                     style="width: ${accuracy}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function updateAlerts(alerts) {
+            const container = document.getElementById('alerts-container');
+            const alertCount = document.getElementById('alert-count');
+
+            alertCount.textContent = alerts.length;
+
+            if (alerts.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted">No active alerts</div>';
+                return;
+            }
+
+            let html = '';
+            alerts.forEach(alert => {
+                const timestamp = new Date(alert.timestamp).toLocaleString();
+
+                html += `
+                    <div class="alert-card alert-${alert.severity} p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>${alert.severity}</strong>
+                                <p class="mb-1">${alert.message}</p>
+                                <small class="text-muted">Model: ${alert.model_id}</small><br>
+                                <small class="text-muted">${timestamp}</small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary" 
+                                    onclick="acknowledgeAlert('${alert.alert_id}')">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function updateModelSelect(models) {
+            const select = document.getElementById('model-select');
+            select.innerHTML = '<option value="">Choose a model...</option>';
+
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model.model_id;
+                option.textContent = `${model.model_name} (${model.model_id})`;
+                select.appendChild(option);
+            });
+        }
+
+        // Utility functions
+        function getAccuracyColor(accuracy) {
+            if (accuracy >= 0.9) return 'bg-success';
+            if (accuracy >= 0.8) return 'bg-warning';
+            return 'bg-danger';
+        }
+
+        function showNotification(message, type = 'info') {
+            // Create toast notification
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            toast.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            document.body.appendChild(toast);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 5000);
+        }
+
+        // API functions
+        async function acknowledgeAlert(alertId) {
+            try {
+                const response = await fetch(`/api/alerts/${alertId}/acknowledge`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification('Alert acknowledged successfully', 'success');
+                    socket.emit('request_update');
+                } else {
+                    showNotification('Failed to acknowledge alert', 'danger');
+                }
+            } catch (error) {
+                console.error('Error acknowledging alert:', error);
+                showNotification('Error acknowledging alert', 'danger');
+            }
+        }
+
+        async function triggerRetraining() {
+            const modelId = document.getElementById('model-select').value;
+            const reason = document.getElementById('retraining-reason').value;
+
+            if (!modelId) {
+                showNotification('Please select a model', 'warning');
+                return;
+            }
+
+            if (!reason) {
+                showNotification('Please provide a reason for retraining', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/retraining/trigger', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model_id: modelId,
+                        reason: reason
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification(`Retraining triggered successfully. Workflow ID: ${result.workflow_id}`, 'success');
+                    document.getElementById('retraining-reason').value = '';
+                    socket.emit('request_update');
+                } else {
+                    showNotification('Failed to trigger retraining', 'danger');
+                }
+            } catch (error) {
+                console.error('Error triggering retraining:', error);
+                showNotification('Error triggering retraining', 'danger');
+            }
+        }
+
+        function emergencyStop() {
+            if (confirm('Are you sure you want to trigger an emergency stop? This will halt all retraining activities.')) {
+                showNotification('Emergency stop functionality not yet implemented', 'warning');
+            }
+        }
+
+        function refreshModels() {
+            socket.emit('request_update');
+            showNotification('Refreshing data...', 'info');
+        }
+
+        // Chart functions
+        async function loadAccuracyChart() {
+            try {
+                const response = await fetch('/api/charts/accuracy?hours=24');
+                const chartData = await response.json();
+
+                Plotly.newPlot('accuracy-chart', chartData.data, chartData.layout, {
+                    responsive: true,
+                    displayModeBar: false
+                });
+
+                document.getElementById('accuracy-chart-updated').textContent =
+                    'Last updated: ' + new Date().toLocaleTimeString();
+            } catch (error) {
+                console.error('Error loading accuracy chart:', error);
+            }
+        }
+
+        async function loadDriftChart() {
+            try {
+                const response = await fetch('/api/charts/drift?days=7');
+                const chartData = await response.json();
+
+                Plotly.newPlot('drift-chart', chartData.data, chartData.layout, {
+                    responsive: true,
+                    displayModeBar: false
+                });
+
+                document.getElementById('drift-chart-updated').textContent =
+                    'Last updated: ' + new Date().toLocaleTimeString();
+            } catch (error) {
+                console.error('Error loading drift chart:', error);
+            }
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function () {
+            // Load initial data
+            socket.emit('request_update');
+            loadAccuracyChart();
+            loadDriftChart();
+
+            // Set up periodic chart updates
+            setInterval(loadAccuracyChart, 300000); // Update every 5 minutes
+            setInterval(loadDriftChart, 600000);    // Update every 10 minutes
+        });
+    </script>
+</body>
+
+</html>

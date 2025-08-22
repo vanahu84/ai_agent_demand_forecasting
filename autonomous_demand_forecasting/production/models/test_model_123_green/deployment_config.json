@@ -1,0 +1,25 @@
+{
+  "model_id": "test_model_123",
+  "model_name": "test_model",
+  "version": "1.0.0",
+  "model_type": "random_forest",
+  "deployment_strategy": "blue_green",
+  "health_checks": {
+    "accuracy_threshold": 0.8,
+    "latency_threshold": 1000,
+    "error_rate_threshold": 0.05
+  },
+  "rollback_criteria": {
+    "accuracy_drop_threshold": 0.05,
+    "error_rate_threshold": 0.1,
+    "latency_increase_threshold": 2.0
+  },
+  "monitoring": {
+    "metrics_collection_interval": 60,
+    "alert_thresholds": {
+      "accuracy": 0.75,
+      "error_rate": 0.08,
+      "latency": 1500
+    }
+  }
+}
