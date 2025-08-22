@@ -21,4 +21,4 @@ echo "🧪 Testing MCP server configuration..."
 python /app/telco_network_optimizer_agent/tower_load_mcp_server.py --help > /dev/null 2>&1 || echo "⚠️  MCP server test failed - continuing anyway"
 
 echo "🌐 Starting ADK MCP server..."
-adk web --host 0.0.0.0 --port "${PORT:-7860}"
+adk web --host 0.0.0.0 --port "${PORT:-10000}"
