@@ -1,7 +1,9 @@
 import asyncio
 import sys
+import sys
 import json
 import time
+import asyncio
 import logging
 from pathlib import Path
 from typing import List, Dict, Any
@@ -177,17 +179,50 @@ if __name__ == "__main__":
     # If run directly, create and test the agent
     asyncio.run(main())
 else:
-    # If imported, create the agent synchronously for ADK
+    # If imported, create the agent synchronously for ADK using simple approach like telco agent
+    logger.info("🚀 Initializing Demand Forecasting Agent with MCP servers")
+    
     try:
-        # Create event loop if none exists
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
+        # Load MCP configuration
+        config_path = Path(__file__).resolve().parent / "mcp_config.json"
+        with open(config_path, "r") as f:
+            mcp_config = json.load(f)["mcpServers"]
         
-        # Create the optimized agent
-        root_agent = loop.run_until_complete(create_optimized_agent())
+        # Create toolsets for enabled servers only (simple approach)
+        toolsets = []
+        failed_servers = []
+        
+        for name, config in mcp_config.items():
+            if config.get("disabled", False):
+                logger.info(f"Skipping disabled MCP Server: {name}")
+                continue
+                
+            logger.info(f"🔧 Adding MCP Server: {name}")
+            try:
+                toolset = MCPToolset(
+                    connection_params=StdioServerParameters(
+                        command=config["command"],
+                        args=config["args"]
+                    )
+                )
+                toolsets.append(toolset)
+                logger.info(f"✅ Toolset created for {name}: {type(toolset).__name__}")
+            except Exception as e:
+                logger.error(f"❌ Failed to create toolset for {name}: {e}")
+                failed_servers.append(name)
+        
+        # Create the agent with available toolsets
+        root_agent = LlmAgent(
+            model="gemini-2.0-flash",
+            name="optimized_data_scientist_agent",
+            instruction=DATA_SCIENTIST_AGENT_PROMPT,
+            tools=toolsets
+        )
+        
+        logger.info(f"✅ Demand Forecasting Agent initialized with {len(toolsets)} MCP toolsets")
+        
+        if failed_servers:
+            logger.warning(f"⚠️ Some MCP servers failed to initialize: {failed_servers}")
         
     except Exception as e:
         logger.error(f"❌ Failed to create optimized agent during import: {e}")
