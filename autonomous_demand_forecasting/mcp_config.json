@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+      "drift_detection": {
+        "command": "python",
+        "args": ["-m", "autonomous_demand_forecasting.drift_detection_mcp_server"],
+        "timeout": 15.0,
+        "disabled": false
+      }
+    }
+}
