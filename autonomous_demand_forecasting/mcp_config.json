@@ -6,9 +6,15 @@
         "timeout": 15.0,
         "disabled": false
       },
-      "sales_date": {
+      "sales_data": {
         "command": "python",
         "args": ["-m", "autonomous_demand_forecasting.sales_data_mcp_server"],
+        "timeout": 15.0,
+        "disabled": false
+      },
+     "inventory": {
+        "command": "python",
+        "args": ["-m", "autonomous_demand_forecasting.inventory_mcp_server"],
         "timeout": 15.0,
         "disabled": false
       }
