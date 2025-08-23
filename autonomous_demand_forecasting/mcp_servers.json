@@ -15,7 +15,7 @@
             "command": "python",
             "args": [
                 "-m",
-                "autonomous_demand_forecasting.sales_data_mcp_server"
+                "autonomous_demand_forecasting/sales_data_mcp_server.py"
             ],
             "timeout": 20.0,
             "retries": 2,
@@ -26,7 +26,7 @@
             "command": "python",
             "args": [
                 "-m",
-                "autonomous_demand_forecasting.inventory_mcp_server"
+                "autonomous_demand_forecasting/inventory_mcp_server.py"
             ],
             "timeout": 20.0,
             "retries": 2,
@@ -58,7 +58,7 @@
         "SQLiteDB": {
             "command": "python",
             "args": [
-                "telco_network_optimizer_agent/server.py"
+                "autonomous_demand_forecasting/server.py"
             ],
             "timeout": 10.0,
             "retries": 3,
@@ -79,4 +79,5 @@
     }
 
 }
+
 
