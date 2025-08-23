@@ -115,6 +115,15 @@ class OptimizedMCPManager:
                 )
             )
             
+            # PATCH: Increase MCP handshake timeout beyond default 5s
+            if hasattr(toolset, "_mcp_session_manager"):
+                try:
+                    toolset._mcp_session_manager.default_timeout = 15.0  # 15s handshake timeout
+                    logger.info(f"Set handshake timeout to 15s for MCP server '{name}'")
+                except Exception as timeout_patch_err:
+                    logger.warning(f"Could not set handshake timeout for {name}: {timeout_patch_err}")
+
+            
             # Test the connection by trying to get tools (with timeout)
             try:
                 # Give each server more time to initialize
@@ -295,5 +304,6 @@ else:
         )
 
         logger.warning("⚠️ Created fallback agent without MCP tools")
+
 
 
