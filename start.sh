@@ -7,8 +7,8 @@ echo "🔧 Starting all MCP servers in background..."
 python -m autonomous_demand_forecasting.drift_detection_mcp_server &
 PID_DRIFT=$!
 
-# python -m autonomous_demand_forecasting.sales_data_mcp_server &
-# PID_SALES=$!
+python -m autonomous_demand_forecasting.sales_data_mcp_server &
+PID_SALES=$!
 
 # python -m autonomous_demand_forecasting.inventory_mcp_server &
 # PID_INVENTORY=$!
@@ -20,7 +20,7 @@ PID_DRIFT=$!
 # PID_VALIDATION=$!
 
 # Trap to clean up all background MCP processes on container exit
-trap "kill $PID_DRIFT" EXIT
+trap "kill $PID_DRIFT $PID_SALES" EXIT
 
 
 # Optionally give them a moment to start
