@@ -5,6 +5,12 @@
         "args": ["-m", "autonomous_demand_forecasting.drift_detection_mcp_server"],
         "timeout": 15.0,
         "disabled": false
+      },
+      "sales_date": {
+        "command": "python",
+        "args": ["-m", "autonomous_demand_forecasting.sales_data_mcp_server"],
+        "timeout": 15.0,
+        "disabled": false
       }
     }
 }
