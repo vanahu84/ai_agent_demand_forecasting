@@ -6,7 +6,7 @@ from pathlib import Path
 from google.adk.agents import LlmAgent
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, StdioServerParameters
 try:
-    from telco_network_optimizer_agent.ds_prompt import DATA_SCIENTIST_AGENT_PROMPT
+    from autonomous_demand_forecasting.ds_prompt import DATA_SCIENTIST_AGENT_PROMPT
 except ImportError:
     from ds_prompt import DATA_SCIENTIST_AGENT_PROMPT
 
@@ -295,3 +295,4 @@ root_agent = LlmAgent(
 #         )
 
 #         logger.warning("⚠️ Created fallback agent without MCP tools")
+
