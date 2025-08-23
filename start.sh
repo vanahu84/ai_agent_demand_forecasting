@@ -13,14 +13,14 @@ PID_SALES=$!
 python -m autonomous_demand_forecasting.inventory_mcp_server &
 PID_INVENTORY=$!
 
-python -m autonomous_demand_forecasting.forecasting_model_mcp_server &
-PID_FORECAST=$!
+# python -m autonomous_demand_forecasting.forecasting_model_mcp_server &
+# PID_FORECAST=$!
 
 # python -m autonomous_demand_forecasting.model_validation_mcp_server &
 # PID_VALIDATION=$!
 
 # Trap to clean up all background MCP processes on container exit
-trap "kill $PID_DRIFT $PID_SALES" EXIT
+trap "kill $PID_DRIFT $PID_SALES $PID_INVENTORY" EXIT
 
 
 # Optionally give them a moment to start
