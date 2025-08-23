@@ -4,10 +4,12 @@
             "command": "python",
             "args": [
                 "-m",
-                "autonomous_demand_forecasting.drift_detection_mcp_server"
+                "autonomous_demand_forecasting/drift_detection_mcp_server.py"
             ],
-            "disabled": false,
-            "autoApprove": []
+            "timeout": 20.0,
+            "retries": 2,
+            "env": {},
+            "disabled": false
         },
         "sales_data": {
             "command": "python",
@@ -15,8 +17,10 @@
                 "-m",
                 "autonomous_demand_forecasting.sales_data_mcp_server"
             ],
-            "disabled": false,
-            "autoApprove": []
+            "timeout": 20.0,
+            "retries": 2,
+            "env": {},
+            "disabled": false
         },
         "inventory": {
             "command": "python",
@@ -24,26 +28,32 @@
                 "-m",
                 "autonomous_demand_forecasting.inventory_mcp_server"
             ],
-            "disabled": true,
-            "autoApprove": []
+            "timeout": 20.0,
+            "retries": 2,
+            "env": {},
+            "disabled": false
         },
         "forecasting_model": {
             "command": "python",
             "args": [
                 "-m",
-                "autonomous_demand_forecasting.forecasting_model_mcp_server"
+                "autonomous_demand_forecasting/forecasting_model_mcp_server.py"
             ],
-            "disabled": true,
-            "autoApprove": []
+            "timeout": 20.0,
+            "retries": 2,
+            "env": {},
+            "disabled": false]
         },
         "model_validation": {
             "command": "python",
             "args": [
                 "-m",
-                "autonomous_demand_forecasting.model_validation_mcp_server"
+                "autonomous_demand_forecasting/model_validation_mcp_server.py"
             ],
-            "disabled": true,
-            "autoApprove": []
+            "timeout": 20.0,
+            "retries": 2,
+            "env": {},
+            "disabled": false]
         },
         "SQLiteDB": {
             "command": "python",
@@ -53,16 +63,19 @@
             "timeout": 10.0,
             "retries": 3,
             "env": {},
-            "disabled": false
+            "disabled": true
         },
         "model_deployment": {
             "command": "python",
             "args": [
                 "-m",
-                "autonomous_demand_forecasting.model_deployment_mcp_server"
+                "autonomous_demand_forecasting/model_deployment_mcp_server.py"
             ],
-            "disabled": true,
-            "autoApprove": []
+            "timeout": 20.0,
+            "retries": 2,
+            "env": {},
+            "disabled": false]
         }
     }
+
 }
