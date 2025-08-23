@@ -1,20 +1,28 @@
 #!/bin/bash
-set -e
+set -e  # exit immediately on error
 
-echo "🔧 Starting MCP servers..."
-# Start Drift Detection MCP server in background
+echo "🔧 Starting all MCP servers in background..."
+
+# Start each MCP server as a background process
 python -m autonomous_demand_forecasting.drift_detection_mcp_server &
-MCP_PID=$!
+PID_DRIFT=$!
 
-# Trap to clean up MCP process when container exits
-trap "kill $MCP_PID" EXIT
+python -m autonomous_demand_forecasting.sales_data_mcp_server &
+PID_SALES=$!
 
-# Optional: If you have more MCP servers, start them similarly:
-# python -m autonomous_demand_forecasting.sales_data_mcp_server & 
-# OTHER_PID=$!
-# trap "kill $MCP_PID $OTHER_PID" EXIT
+python -m autonomous_demand_forecasting.inventory_mcp_server &
+PID_INVENTORY=$!
 
-# Give servers a moment to boot
+python -m autonomous_demand_forecasting.forecasting_model_mcp_server &
+PID_FORECAST=$!
+
+python -m autonomous_demand_forecasting.model_validation_mcp_server &
+PID_VALIDATION=$!
+
+# Trap to clean up all background MCP processes on container exit
+trap "kill $PID_DRIFT $PID_SALES $PID_INVENTORY $PID_FORECAST $PID_VALIDATION" EXIT
+
+# Optionally give them a moment to start
 sleep 2
 
 echo "🌐 Starting ADK web service..."
