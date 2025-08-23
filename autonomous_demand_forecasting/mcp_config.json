@@ -17,6 +17,12 @@
         "args": ["-m", "autonomous_demand_forecasting.inventory_mcp_server"],
         "timeout": 15.0,
         "disabled": false
+      },
+     "forecast_model": {
+        "command": "python",
+        "args": ["-m", "autonomous_demand_forecasting.forecasting_model_mcp_server"],
+        "timeout": 15.0,
+        "disabled": false
       }
     }
 }
