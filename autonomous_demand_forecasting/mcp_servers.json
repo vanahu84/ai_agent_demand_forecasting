@@ -42,7 +42,7 @@
             "timeout": 20.0,
             "retries": 2,
             "env": {},
-            "disabled": false]
+            "disabled": false
         },
         "model_validation": {
             "command": "python",
@@ -53,7 +53,7 @@
             "timeout": 20.0,
             "retries": 2,
             "env": {},
-            "disabled": false]
+            "disabled": false
         },
         "SQLiteDB": {
             "command": "python",
@@ -74,8 +74,9 @@
             "timeout": 20.0,
             "retries": 2,
             "env": {},
-            "disabled": false]
+            "disabled": false
         }
     }
 
 }
+
