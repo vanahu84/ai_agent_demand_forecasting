@@ -30,7 +30,7 @@
             ],
             "timeout": 30.0,
             "retries": 3,
-            "disabled": true,
+            "disabled": false,
             "autoApprove": []
         },
         "forecasting_model": {
@@ -41,7 +41,7 @@
             ],
             "timeout": 30.0,
             "retries": 3,
-            "disabled": true,
+            "disabled": false,
             "autoApprove": []
         },
         "model_validation": {
@@ -52,18 +52,20 @@
             ],
             "timeout": 30.0,
             "retries": 3,
-            "disabled": true,
+            "disabled": false,
             "autoApprove": []
         },
         "SQLiteDB": {
             "command": "python",
             "args": [
-                "telco_network_optimizer_agent/server.py"
+                "-m",
+                "autonomous_demand_forecasting.server"                
             ],
             "timeout": 30.0,
             "retries": 3,
             "env": {},
-            "disabled": false
+            "disabled": false,
+            "autoApprove": []
         },
         "model_deployment": {
             "command": "python",
@@ -73,9 +75,10 @@
             ],
             "timeout": 30.0,
             "retries": 3,
-            "disabled": true,
+            "disabled": false,
             "autoApprove": []
         }
     }
 
 }
+
